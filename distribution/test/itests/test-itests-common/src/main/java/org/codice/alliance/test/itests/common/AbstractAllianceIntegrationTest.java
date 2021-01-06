@@ -38,7 +38,8 @@ public abstract class AbstractAllianceIntegrationTest extends AbstractIntegratio
     "spatial-app",
     "security-app",
     "imaging-app",
-    "video-app"
+    "video-app",
+    "jms-app"
   };
 
   @Override
