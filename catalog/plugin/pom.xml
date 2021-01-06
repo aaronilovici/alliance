@@ -27,6 +27,7 @@
     <modules>
         <module>catalog-plugin-defaultsecurityattributevalues</module>
         <module>catalog-plugin-auditcontrolledaccess</module>
+        <module>catalog-plugin-jms</module>
     </modules>
 
 </project>

@@ -65,6 +65,13 @@
             <type>xml</type>
         </dependency>
         <dependency>
+            <groupId>org.codice.alliance.jms</groupId>
+            <artifactId>jms-app</artifactId>
+            <version>${project.version}</version>
+            <classifier>features</classifier>
+            <type>xml</type>
+        </dependency>
+        <dependency>
             <groupId>org.codice.alliance.video</groupId>
             <artifactId>video-app</artifactId>
             <version>${project.version}</version>
@@ -171,12 +178,23 @@
                                     mvn:org.codice.alliance.video/video-app/${project.version}/xml/features
                                 </descriptor>
                                 <descriptor>
+                                    mvn:org.codice.alliance.jms/jms-app/${project.version}/xml/features
+                                </descriptor>
+                                <descriptor>
                                     mvn:org.codice.alliance.distribution/alliance-branding-app/${project.version}/xml/features
                                 </descriptor>
                                 <descriptor>
                                     mvn:org.codice.alliance.distribution/install-profiles/${project.version}/xml/features
                                 </descriptor>
+
+                                <!-- Third Party Apps -->
+                                <descriptor>
+                                    mvn:org.apache.activemq/artemis-features/${artemis.version}/xml/features
+                                </descriptor>
                             </descriptors>
+                            <features>
+                                artemis-install
+                            </features>
                             <repository>${setup.folder}/ddf-kernel-${ddf.version}/system</repository>
                         </configuration>
                     </execution>

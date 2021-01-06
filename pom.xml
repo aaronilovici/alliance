@@ -137,6 +137,7 @@
         <asciidoctorj.version>1.6.2</asciidoctorj.version>
         <jruby.version>9.2.11.1</jruby.version>
 
+        <artemis.version>2.16.0</artemis.version>
         <camel.version>3.4.0</camel.version>
         <commons-collections4.version>4.1</commons-collections4.version>
         <commons-configuration.version>1.10</commons-configuration.version>

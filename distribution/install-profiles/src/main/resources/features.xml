@@ -31,6 +31,7 @@
         <feature>video-app</feature>
         <feature>imaging-app</feature>
         <feature>security-app</feature>
+        <feature>jms-app</feature>
     </feature>
 
 </features>

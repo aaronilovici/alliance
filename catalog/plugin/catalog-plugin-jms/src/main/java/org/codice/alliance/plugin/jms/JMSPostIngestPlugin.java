@@ -13,41 +13,45 @@
  */
 package org.codice.alliance.plugin.jms;
 
+import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.operation.CreateResponse;
 import ddf.catalog.operation.DeleteResponse;
+import ddf.catalog.operation.ResourceRequest;
+import ddf.catalog.operation.ResourceResponse;
 import ddf.catalog.operation.UpdateResponse;
+import ddf.catalog.operation.impl.ResourceRequestByProductUri;
 import ddf.catalog.plugin.PluginExecutionException;
 import ddf.catalog.plugin.PostIngestPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import ddf.catalog.resource.Resource;
+import ddf.catalog.resource.ResourceNotFoundException;
+import ddf.catalog.resource.ResourceNotSupportedException;
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Session;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * This post-ingest plugin sends data to a JMS queue
- */
+/** This post-ingest plugin sends data to a JMS queue */
 public class JMSPostIngestPlugin implements PostIngestPlugin {
   private static final Logger LOGGER = LoggerFactory.getLogger(JMSPostIngestPlugin.class);
+  private static final String BROKER_URL = "vm://localhost";
+  private static final String QUEUE_NAME = System.getProperty("activemq.queue.name");
 
-  static QueueConnection connection;
-  static QueueReceiver queueReceiver;
-  static Queue queue;
+  private CatalogFramework catalogFramework;
+  private ActiveMQConnectionFactory connectionFactory;
+  private Connection connection;
 
   @Override
   public CreateResponse process(CreateResponse createResponse) throws PluginExecutionException {
@@ -79,21 +83,66 @@ public class JMSPostIngestPlugin implements PostIngestPlugin {
       throws InterruptedException {
 
     try {
-      InitialContext ctx = new InitialContext();
-      QueueConnectionFactory factory = (QueueConnectionFactory)ctx.lookup("myQueueConnectionFactory");
-      QueueConnection conn = factory.createQueueConnection();
-      conn.start();
+      // Create connection
+      if (connectionFactory == null) {
+        LOGGER.debug("Creating connection to ActiveMQ broker " + BROKER_URL);
+        connectionFactory = new ActiveMQConnectionFactory(BROKER_URL);
+      }
+      connection = connectionFactory.createConnection();
+      connection.start();
 
-      QueueSession session = conn.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      Queue queue = (Queue)ctx.lookup("myQueue");
-      QueueSender sender = session.createSender(queue);
-      TextMessage msg = session.createTextMessage();
+      // Create session
+      LOGGER.debug("Creating session to ActiveMQ queue " + QUEUE_NAME);
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Destination destination = session.createQueue(QUEUE_NAME);
 
-      msg.setText();
-      sender.send(msg);
-      conn.close();
-    } catch (NamingException | JMSException e) {
-      LOGGER.error("Unable to send message to JMS Queue", e);
+      // Create message producer
+      MessageProducer producer = session.createProducer(destination);
+      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+      // Iterate through all metacards in CreateResponse
+      for (Metacard metacard : metacards) {
+        // Obtain resource URI
+        URI resourceURI = metacard.getResourceURI();
+        String sourceName = metacard.getSourceId();
+        final ResourceRequest resourceRequest = new ResourceRequestByProductUri(resourceURI);
+
+        // Obtain resource itself
+        Resource resource = null;
+        ResourceResponse resourceResponse = null;
+        try {
+          resourceResponse = catalogFramework.getResource(resourceRequest, sourceName);
+        } catch (IOException | ResourceNotFoundException | ResourceNotSupportedException e) {
+          LOGGER.error("Unable to retrieve metacard resource", e);
+        }
+
+        if (resourceResponse != null) {
+          resource = resourceResponse.getResource();
+        }
+
+        // Send message to queue with serializable resource
+        if (resource != null) {
+          LOGGER.debug(
+              "Sending resource to ActiveMQ queue " + QUEUE_NAME + ": " + resource.getName());
+          JMSResourceWrapper wrappedResource = new JMSResourceWrapper(resource);
+          ObjectMessage message = session.createObjectMessage(wrappedResource);
+          producer.send(message);
+        }
+      }
+    } catch (JMSException e) {
+      LOGGER.error("Unable to establish connection to JMS Queue", e);
     }
+  }
+
+  public void setCatalogFramework(CatalogFramework catalogFramework) {
+    this.catalogFramework = catalogFramework;
+  }
+
+  public void setConnectionFactory(ActiveMQConnectionFactory connectionFactory) {
+    this.connectionFactory = connectionFactory;
+  }
+
+  public void setConnection(Connection connection) {
+    this.connection = connection;
   }
 }
