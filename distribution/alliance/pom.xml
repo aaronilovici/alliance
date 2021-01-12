@@ -192,9 +192,7 @@
                                     mvn:org.apache.activemq/artemis-features/${artemis.version}/xml/features
                                 </descriptor>
                             </descriptors>
-                            <features>
-                                artemis-install
-                            </features>
+
                             <repository>${setup.folder}/ddf-kernel-${ddf.version}/system</repository>
                         </configuration>
                     </execution>

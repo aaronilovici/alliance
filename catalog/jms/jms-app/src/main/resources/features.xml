@@ -23,12 +23,12 @@
 
     <feature name="jms-plugin" version="${project.version}"
              description="The JMS Plugin provides the means by which products can be forwarded to a JMS queue">
+        <feature>catalog-app</feature>
         <bundle>mvn:org.codice.alliance.catalog.plugin/catalog-plugin-jms/${project.version}</bundle>
     </feature>
 
     <feature name="jms-app" version="${project.version}"
              description="The JMS Application provides support for forwarding products to a JMS queue">
-        <feature>catalog-app</feature>
         <feature>jms-plugin</feature>
         <bundle>mvn:org.codice.alliance.catalog.core/catalog-core-api/${project.version}</bundle>
     </feature>

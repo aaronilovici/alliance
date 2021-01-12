@@ -14,8 +14,8 @@
  -->
 <metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
 
-    <Designate pid="org.codice.alliance.plugin.jms.PostIngestPlugin">
-        <Object ocdref="org.codice.alliance.plugin.jms.PostIngestPlugin" />
+    <Designate pid="org.codice.alliance.plugin.jms.JMSPostIngestPlugin">
+        <Object ocdref="org.codice.alliance.plugin.jms.JMSPostIngestPlugin" />
     </Designate>
 
 </metatype:MetaData>

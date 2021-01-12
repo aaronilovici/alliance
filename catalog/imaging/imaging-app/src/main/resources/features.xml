@@ -22,8 +22,6 @@
         <bundle>mvn:org.codice.alliance.imaging/imaging-plugin-nitf/${project.version}</bundle>
     </feature>
 
-
-
     <feature name="imaging-app" version="${project.version}"
              description="The Imaging Application provides support for ingesting and searching for NITF products.::Imaging">
         <feature>catalog-app</feature>

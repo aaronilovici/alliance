@@ -18,6 +18,10 @@
     <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework"
                availability="mandatory"/>
 
+    <bean id="JMSPostIngestPlugin"
+          class="org.codice.alliance.plugin.jms.JMSPostIngestPlugin">
+    </bean>
+
     <service ref="JMSPostIngestPlugin"
-             interface="org.codice.alliance.plugin.jms.PostIngestPlugin"/>
+             interface="ddf.catalog.plugin.PostIngestPlugin"/>
 </blueprint>

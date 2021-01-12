@@ -63,7 +63,7 @@ public class JMSPostIngestPlugin implements PostIngestPlugin {
           new HashSet<>(createResponse.getCreatedMetacards()),
           createResponse.getRequest().getProperties());
     } catch (InterruptedException e) {
-      LOGGER.debug("Interrupt received while doing image processing.", e);
+      LOGGER.debug("Interrupt received while processing.", e);
       Thread.currentThread().interrupt();
     }
     return createResponse;
@@ -92,7 +92,7 @@ public class JMSPostIngestPlugin implements PostIngestPlugin {
       connection.start();
 
       // Create session
-      LOGGER.debug("Creating session to ActiveMQ queue " + QUEUE_NAME);
+      LOGGER.debug(String.format("Creating session to ActiveMQ queue %s", QUEUE_NAME));
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Destination destination = session.createQueue(QUEUE_NAME);
 
@@ -123,7 +123,8 @@ public class JMSPostIngestPlugin implements PostIngestPlugin {
         // Send message to queue with serializable resource
         if (resource != null) {
           LOGGER.debug(
-              "Sending resource to ActiveMQ queue " + QUEUE_NAME + ": " + resource.getName());
+              String.format(
+                  "Sending resource to ActiveMQ queue %s: %s", QUEUE_NAME, resource.getName()));
           JMSResourceWrapper wrappedResource = new JMSResourceWrapper(resource);
           ObjectMessage message = session.createObjectMessage(wrappedResource);
           producer.send(message);
